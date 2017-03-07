@@ -2,14 +2,15 @@
   "name": "decorouter",
   "version": "1.0.0",
   "description": "The Decorative Router - very lightweight client routing using TypeScript decorators and HTML5 History API",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "lib/main/index.js",
+  "types": "lib/main/index.d.ts",
   "scripts": {
     "build": "tsc && webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
+  "repository": "https://github.com/onlinegroupat/decorouter.git",
   "dependencies": {
     "@types/route-parser": "0.0.0",
     "route-parser": "0.0.5"
