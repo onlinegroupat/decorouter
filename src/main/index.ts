@@ -156,23 +156,25 @@ class RouterImpl implements Router {
 
     public maybeAddState(obj:any, methodName:string, args:IArguments) {
         let methodRoutes:Map<string, Route> = this.routes.get(obj);
-        let route = methodRoutes.get(methodName);
+        if (methodRoutes) {
+            let route = methodRoutes.get(methodName);
 
-        let routeParams:RouteParams = {};
+            let routeParams:RouteParams = {};
 
-        for (let paramEntry of params) {
-            // check class
-            if (obj instanceof paramEntry.target.constructor) {
-                // check method
-                if (methodName == paramEntry.methodName) {
-                    routeParams[paramEntry.paramName] = args[paramEntry.index];
+            for (let paramEntry of params) {
+                // check class
+                if (obj instanceof paramEntry.target.constructor) {
+                    // check method
+                    if (methodName == paramEntry.methodName) {
+                        routeParams[paramEntry.paramName] = args[paramEntry.index];
+                    }
                 }
             }
-        }
 
-        let newState = route.reverse(routeParams);
-        if (newState) {
-            this.locationProvider.location = newState as string;
+            let newState = route.reverse(routeParams);
+            if (newState) {
+                this.locationProvider.location = newState as string;
+            }
         }
     }
 }
