@@ -18,9 +18,14 @@ class Example {
         content.innerText = 'hello, ' + value;
     }
 
-    @route('*')
-    public noMatch() {
-        content.innerText = 'sorry, nothing found';
+    @route('sub/*path')
+    public noMatchSub(@routeParam('path') path:string) {
+        content.innerText = 'sorry, nothing found at subpath sub/' + path;
+    }
+
+    @route('*path')
+    public noMatch(@routeParam('path') path:string) {
+        content.innerText = 'sorry, nothing found at ' + path;
     }
 }
 

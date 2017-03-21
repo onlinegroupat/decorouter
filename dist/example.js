@@ -181,16 +181,9 @@ class RouterImpl {
         this.locationProvider = locationProvider;
         this.buildRoutes();
         window.onpopstate = (e) => {
-            this.navigateToPath(this.getCurrentHashLocation());
+            this.navigateToPath(this.locationProvider.location);
         };
-        this.navigateToPath(this.getCurrentHashLocation());
-    }
-    getCurrentHashLocation() {
-        let currentPath = window.location.hash;
-        if (currentPath && currentPath.startsWith('#')) {
-            currentPath = currentPath.substring(1);
-        }
-        return currentPath;
+        this.navigateToPath(this.locationProvider.location);
     }
     buildRoutes() {
         for (let objectEntry of objects) {
@@ -229,17 +222,16 @@ class RouterImpl {
         obj[methodName].call(obj, args);
     }
     navigateToPath(path) {
-        let found = false;
         for (let [obj, methodRoutes] of this.routes) {
             for (let [methodName, route] of methodRoutes) {
                 let match = route.match(path);
                 if (match) {
                     this.handleRoute(obj, methodName, match);
-                    found = true;
-                    break;
+                    return true;
                 }
             }
         }
+        return false;
     }
     combinePath(path1, path2) {
         path1 = path1 || '';
@@ -251,20 +243,22 @@ class RouterImpl {
     }
     maybeAddState(obj, methodName, args) {
         let methodRoutes = this.routes.get(obj);
-        let route = methodRoutes.get(methodName);
-        let routeParams = {};
-        for (let paramEntry of params) {
-            // check class
-            if (obj instanceof paramEntry.target.constructor) {
-                // check method
-                if (methodName == paramEntry.methodName) {
-                    routeParams[paramEntry.paramName] = args[paramEntry.index];
+        if (methodRoutes) {
+            let route = methodRoutes.get(methodName);
+            let routeParams = {};
+            for (let paramEntry of params) {
+                // check class
+                if (obj instanceof paramEntry.target.constructor) {
+                    // check method
+                    if (methodName == paramEntry.methodName) {
+                        routeParams[paramEntry.paramName] = args[paramEntry.index];
+                    }
                 }
             }
-        }
-        let newState = route.reverse(routeParams);
-        if (newState) {
-            this.locationProvider.location = newState;
+            let newState = route.reverse(routeParams);
+            if (newState) {
+                this.locationProvider.location = newState;
+            }
         }
     }
 }
@@ -1269,8 +1263,11 @@ let Example = class Example {
     custom(value) {
         content.innerText = 'hello, ' + value;
     }
-    noMatch() {
-        content.innerText = 'sorry, nothing found';
+    noMatchSub(path) {
+        content.innerText = 'sorry, nothing found at subpath sub/' + path;
+    }
+    noMatch(path) {
+        content.innerText = 'sorry, nothing found at ' + path;
     }
 };
 __decorate([
@@ -1284,7 +1281,12 @@ __decorate([
     __param(0, index_1.routeParam('value'))
 ], Example.prototype, "custom", null);
 __decorate([
-    index_1.route('*')
+    index_1.route('sub/*path'),
+    __param(0, index_1.routeParam('path'))
+], Example.prototype, "noMatchSub", null);
+__decorate([
+    index_1.route('*path'),
+    __param(0, index_1.routeParam('path'))
 ], Example.prototype, "noMatch", null);
 Example = __decorate([
     index_1.route('/')

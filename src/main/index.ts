@@ -22,7 +22,6 @@ const methods:MethodEntry[] = [];
 const params:ParamEntry[] = [];
 const objects:ObjectEntry[] = [];
 
-
 type RouteParams = { [key:string]:string }
 
 export interface LocationProvider {
@@ -67,19 +66,10 @@ class RouterImpl implements Router {
         this.buildRoutes();
 
         window.onpopstate = (e) => {
-            this.navigateToPath(this.getCurrentHashLocation());
+            this.navigateToPath(this.locationProvider.location);
         };
 
-        this.navigateToPath(this.getCurrentHashLocation());
-    }
-
-    private getCurrentHashLocation():string {
-        let currentPath = window.location.hash;
-        if (currentPath && currentPath.startsWith('#')) {
-            currentPath = currentPath.substring(1);
-        }
-
-        return currentPath;
+        this.navigateToPath(this.locationProvider.location);
     }
 
     private buildRoutes() {
@@ -126,20 +116,19 @@ class RouterImpl implements Router {
         obj[methodName].call(obj, args);
     }
 
-    private navigateToPath(path:string) {
-
-        let found = false;
+    private navigateToPath(path:string):boolean {
 
         for (let [obj, methodRoutes] of this.routes) {
             for (let [methodName, route] of methodRoutes) {
                 let match = route.match(path);
                 if (match) {
                     this.handleRoute(obj, methodName, match as RouteParams);
-                    found = true;
-                    break;
+                    return true;
                 }
             }
         }
+
+        return false;
     }
 
 
