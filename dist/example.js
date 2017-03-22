@@ -152,51 +152,71 @@ module.exports = createVisitor;
 
 "use strict";
 
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
-const Route = __webpack_require__(3);
-const methods = [];
-const params = [];
-const objects = [];
-class HashLocationProvider {
-    get location() {
-        let currentPath = window.location.hash;
-        if (currentPath && currentPath.startsWith('#')) {
-            currentPath = currentPath.substring(1);
-        }
-        return currentPath;
+var Route = __webpack_require__(3);
+var methods = [];
+var params = [];
+var objects = [];
+var HashLocationProvider = (function () {
+    function HashLocationProvider() {
     }
-    set location(location) {
-        window.location.hash = '#' + location;
-    }
-}
+    Object.defineProperty(HashLocationProvider.prototype, "location", {
+        get: function () {
+            var currentPath = window.location.hash;
+            if (currentPath && currentPath.startsWith('#')) {
+                currentPath = currentPath.substring(1);
+            }
+            return currentPath;
+        },
+        set: function (location) {
+            window.location.hash = '#' + location;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return HashLocationProvider;
+}());
 exports.HashLocationProvider = HashLocationProvider;
-class RouterImpl {
-    constructor() {
+var RouterImpl = (function () {
+    function RouterImpl() {
         this.routes = new Map();
     }
-    init(locationProvider) {
+    RouterImpl.prototype.init = function (locationProvider) {
+        var _this = this;
         if (!locationProvider) {
             throw new Error('locationProvider was not specified.');
         }
         this.locationProvider = locationProvider;
         this.buildRoutes();
-        window.onpopstate = (e) => {
-            this.navigateToPath(this.locationProvider.location);
+        window.onpopstate = function (e) {
+            _this.navigateToPath(_this.locationProvider.location);
         };
         this.navigateToPath(this.locationProvider.location);
-    }
-    buildRoutes() {
-        for (let objectEntry of objects) {
-            for (let methodEntry of methods) {
+    };
+    RouterImpl.prototype.buildRoutes = function () {
+        for (var _i = 0, objects_1 = objects; _i < objects_1.length; _i++) {
+            var objectEntry = objects_1[_i];
+            for (var _a = 0, methods_1 = methods; _a < methods_1.length; _a++) {
+                var methodEntry = methods_1[_a];
                 if (objectEntry.obj instanceof methodEntry.target.constructor) {
-                    let routePath = this.combinePath(objectEntry.path, methodEntry.path);
+                    var routePath = this.combinePath(objectEntry.path, methodEntry.path);
                     this.addRoute(objectEntry.obj, methodEntry.methodName, new Route(routePath));
                 }
             }
         }
-    }
-    addRoute(obj, methodName, route) {
-        let methodRoute = null;
+    };
+    RouterImpl.prototype.addRoute = function (obj, methodName, route) {
+        var methodRoute = null;
         if (this.routes.has(obj)) {
             methodRoute = this.routes.get(obj);
         }
@@ -205,11 +225,12 @@ class RouterImpl {
             this.routes.set(obj, methodRoute);
         }
         methodRoute.set(methodName, route);
-    }
-    handleRoute(obj, methodName, routeParams) {
+    };
+    RouterImpl.prototype.handleRoute = function (obj, methodName, routeParams) {
         // build argument list
-        let args = [];
-        for (let paramEntry of params) {
+        var args = [];
+        for (var _i = 0, params_1 = params; _i < params_1.length; _i++) {
+            var paramEntry = params_1[_i];
             // check class
             if (obj instanceof paramEntry.target.constructor) {
                 // check method
@@ -220,33 +241,36 @@ class RouterImpl {
         }
         // call method
         obj[methodName].call(obj, args);
-    }
-    navigateToPath(path) {
-        for (let [obj, methodRoutes] of this.routes) {
-            for (let [methodName, route] of methodRoutes) {
-                let match = route.match(path);
+    };
+    RouterImpl.prototype.navigateToPath = function (path) {
+        var _this = this;
+        var found = false;
+        this.routes.forEach(function (methodRoutes, obj) {
+            methodRoutes.forEach(function (route, methodName) {
+                var match = route.match(path);
                 if (match) {
-                    this.handleRoute(obj, methodName, match);
-                    return true;
+                    _this.handleRoute(obj, methodName, match);
+                    found = true;
                 }
-            }
-        }
-        return false;
-    }
-    combinePath(path1, path2) {
+            });
+        });
+        return found;
+    };
+    RouterImpl.prototype.combinePath = function (path1, path2) {
         path1 = path1 || '';
         path2 = path2 || '';
         if (!path1.endsWith('/') && !path2.startsWith('/')) {
             path1 += '/';
         }
         return path1 + path2;
-    }
-    maybeAddState(obj, methodName, args) {
-        let methodRoutes = this.routes.get(obj);
+    };
+    RouterImpl.prototype.maybeAddState = function (obj, methodName, args) {
+        var methodRoutes = this.routes.get(obj);
         if (methodRoutes) {
-            let route = methodRoutes.get(methodName);
-            let routeParams = {};
-            for (let paramEntry of params) {
+            var route_1 = methodRoutes.get(methodName);
+            var routeParams = {};
+            for (var _i = 0, params_2 = params; _i < params_2.length; _i++) {
+                var paramEntry = params_2[_i];
                 // check class
                 if (obj instanceof paramEntry.target.constructor) {
                     // check method
@@ -255,17 +279,18 @@ class RouterImpl {
                     }
                 }
             }
-            let newState = route.reverse(routeParams);
+            var newState = route_1.reverse(routeParams);
             if (newState) {
                 this.locationProvider.location = newState;
             }
         }
-    }
-}
+    };
+    return RouterImpl;
+}());
 function routeMethod(path) {
-    return (target, methodName, descriptor) => {
-        methods.push({ target, methodName, path });
-        let original = descriptor.value;
+    return function (target, methodName, descriptor) {
+        methods.push({ target: target, methodName: methodName, path: path });
+        var original = descriptor.value;
         // inject wrapper
         descriptor.value = function () {
             // add state
@@ -278,41 +303,49 @@ function routeMethod(path) {
 }
 exports.routeMethod = routeMethod;
 function routeClass(path) {
-    return (target) => {
-        return class Wrapper extends target {
-            constructor() {
-                super();
-                objects.push({ obj: this, path: path });
+    return function (target) {
+        return (function (_super) {
+            __extends(Wrapper, _super);
+            function Wrapper() {
+                var _this = _super.call(this) || this;
+                objects.push({ obj: _this, path: path });
+                return _this;
             }
-        };
+            return Wrapper;
+        }(target));
     };
 }
 exports.routeClass = routeClass;
 function routeParam(paramName) {
-    return (target, methodName, index) => {
-        params.push({ target, methodName, index, paramName });
+    return function (target, methodName, index) {
+        params.push({ target: target, methodName: methodName, index: index, paramName: paramName });
     };
 }
 exports.routeParam = routeParam;
 function route(route) {
-    return (...args) => {
+    var _this = this;
+    return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
         switch (args.length) {
             case 1:
-                return routeClass(route).apply(this, args);
+                return routeClass(route).apply(_this, args);
             case 2:
                 throw new Error('decorator @route not supported on properties.');
             case 3:
                 if (typeof args[2] === "number") {
                     throw new Error('decorator @route not supported on parameters.');
                 }
-                return routeMethod(route).apply(this, args);
+                return routeMethod(route).apply(_this, args);
             default:
                 throw new Error('unsupported decorator signature');
         }
     };
 }
 exports.route = route;
-const routerImpl = new RouterImpl();
+var routerImpl = new RouterImpl();
 exports.router = routerImpl;
 
 
@@ -1252,24 +1285,27 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const index_1 = __webpack_require__(2);
-let Example = class Example {
-    test1() {
+var index_1 = __webpack_require__(2);
+var Example = (function () {
+    function Example() {
+    }
+    Example.prototype.test1 = function () {
         content.innerText = 'hello, test1';
-    }
-    test2() {
+    };
+    Example.prototype.test2 = function () {
         content.innerText = 'hello, test2';
-    }
-    custom(value) {
+    };
+    Example.prototype.custom = function (value) {
         content.innerText = 'hello, ' + value;
-    }
-    noMatchSub(path) {
+    };
+    Example.prototype.noMatchSub = function (path) {
         content.innerText = 'sorry, nothing found at subpath sub/' + path;
-    }
-    noMatch(path) {
+    };
+    Example.prototype.noMatch = function (path) {
         content.innerText = 'sorry, nothing found at ' + path;
-    }
-};
+    };
+    return Example;
+}());
 __decorate([
     index_1.route('test1')
 ], Example.prototype, "test1", null);
@@ -1291,12 +1327,12 @@ __decorate([
 Example = __decorate([
     index_1.route('/')
 ], Example);
-let example = new Example();
-let content = document.getElementById('content');
-let test1 = document.getElementById('test1');
-let test2 = document.getElementById('test2');
-let test3 = document.getElementById('test3');
-test1.onclick = (e) => {
+var example = new Example();
+var content = document.getElementById('content');
+var test1 = document.getElementById('test1');
+var test2 = document.getElementById('test2');
+var test3 = document.getElementById('test3');
+test1.onclick = function (e) {
     e.preventDefault();
     example.test1();
     return false;

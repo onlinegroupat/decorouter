@@ -118,17 +118,18 @@ class RouterImpl implements Router {
 
     private navigateToPath(path:string):boolean {
 
-        for (let [obj, methodRoutes] of this.routes) {
-            for (let [methodName, route] of methodRoutes) {
+        let found = false;
+
+        this.routes.forEach((methodRoutes, obj) => {
+            methodRoutes.forEach((route, methodName) => {
                 let match = route.match(path);
                 if (match) {
                     this.handleRoute(obj, methodName, match as RouteParams);
-                    return true;
+                    found = true;
                 }
-            }
-        }
-
-        return false;
+            });
+        });
+        return found;
     }
 
 

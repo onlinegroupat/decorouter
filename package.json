@@ -12,7 +12,9 @@
   "license": "ISC",
   "repository": "https://github.com/onlinegroupat/decorouter.git",
   "dependencies": {
+    "@types/es6-shim": "^0.31.32",
     "@types/route-parser": "0.0.0",
+    "es6-shim": "^0.35.3",
     "route-parser": "0.0.5"
   },
   "devDependencies": {
