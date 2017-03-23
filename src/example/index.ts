@@ -1,5 +1,5 @@
 
-import {route, router, routeParam, HashLocationProvider} from '../main/index';
+import {route, router, routeParam, HashLocationProvider, PathLocationProvider} from '../main/index';
 
 @route('/')
 class Example {
@@ -48,4 +48,5 @@ test1.onclick = (e) => {
     return false;
 };
 
-router.init(new HashLocationProvider());
+let servedAsFile = location.protocol.indexOf('file') === 0;
+router.init(servedAsFile ? new HashLocationProvider() : new PathLocationProvider('/'));

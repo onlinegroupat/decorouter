@@ -60,10 +60,10 @@
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
+/******/ 	__webpack_require__.p = "/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 9);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -163,17 +163,29 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var Route = __webpack_require__(3);
+var Route = __webpack_require__(4);
 var methods = [];
 var params = [];
 var objects = [];
+var PathUtil = (function () {
+    function PathUtil() {
+    }
+    PathUtil.combinePath = function (path1, path2) {
+        path1 = path1 || '';
+        path2 = path2 || '';
+        var path = path1 + '/' + path2;
+        return path.replace(PathUtil.MultiSlashRegex, '/');
+    };
+    return PathUtil;
+}());
+PathUtil.MultiSlashRegex = /\/[\/]+/g;
 var HashLocationProvider = (function () {
     function HashLocationProvider() {
     }
     Object.defineProperty(HashLocationProvider.prototype, "location", {
         get: function () {
             var currentPath = window.location.hash;
-            if (currentPath && currentPath.startsWith('#')) {
+            if (currentPath && currentPath.indexOf('#') === 0) {
                 currentPath = currentPath.substring(1);
             }
             return currentPath;
@@ -187,6 +199,29 @@ var HashLocationProvider = (function () {
     return HashLocationProvider;
 }());
 exports.HashLocationProvider = HashLocationProvider;
+var PathLocationProvider = (function () {
+    function PathLocationProvider(basePath) {
+        if (basePath === void 0) { basePath = '/'; }
+        this.basePath = basePath;
+    }
+    Object.defineProperty(PathLocationProvider.prototype, "location", {
+        get: function () {
+            var pathName = '/' + window.location.pathname;
+            if (pathName.indexOf(this.basePath) !== 0) {
+                throw 'basePath not in current window.location.pathname';
+            }
+            return pathName.substring(this.basePath.length);
+        },
+        set: function (location) {
+            var newPath = PathUtil.combinePath(this.basePath, location);
+            history.pushState(null, null, newPath);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return PathLocationProvider;
+}());
+exports.PathLocationProvider = PathLocationProvider;
 var RouterImpl = (function () {
     function RouterImpl() {
         this.routes = new Map();
@@ -198,7 +233,7 @@ var RouterImpl = (function () {
         }
         this.locationProvider = locationProvider;
         this.buildRoutes();
-        window.onpopstate = function (e) {
+        window.onpopstate = function () {
             _this.navigateToPath(_this.locationProvider.location);
         };
         this.navigateToPath(this.locationProvider.location);
@@ -209,7 +244,7 @@ var RouterImpl = (function () {
             for (var _a = 0, methods_1 = methods; _a < methods_1.length; _a++) {
                 var methodEntry = methods_1[_a];
                 if (objectEntry.obj instanceof methodEntry.target.constructor) {
-                    var routePath = this.combinePath(objectEntry.path, methodEntry.path);
+                    var routePath = PathUtil.combinePath(objectEntry.path, methodEntry.path);
                     this.addRoute(objectEntry.obj, methodEntry.methodName, new Route(routePath));
                 }
             }
@@ -258,14 +293,6 @@ var RouterImpl = (function () {
             }
         }
         return false;
-    };
-    RouterImpl.prototype.combinePath = function (path1, path2) {
-        path1 = path1 || '';
-        path2 = path2 || '';
-        if (!path1.endsWith('/') && !path2.startsWith('/')) {
-            path1 += '/';
-        }
-        return path1 + path2;
     };
     RouterImpl.prototype.maybeAddState = function (obj, methodName, args) {
         var methodRoutes = this.routes.get(obj);
@@ -357,25 +384,103 @@ exports.router = routerImpl;
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/**
- * @module Passage
- */
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var index_1 = __webpack_require__(2);
+var Example = (function () {
+    function Example() {
+    }
+    Example.prototype.index = function () {
+        content.innerText = 'hello, index';
+    };
+    Example.prototype.test1 = function () {
+        content.innerText = 'hello, test1';
+    };
+    Example.prototype.test2 = function () {
+        content.innerText = 'hello, test2';
+    };
+    Example.prototype.custom = function (value) {
+        content.innerText = 'hello, ' + value;
+    };
+    Example.prototype.noMatchSub = function (path) {
+        content.innerText = 'sorry, nothing found at subpath sub/' + path;
+    };
+    Example.prototype.noMatch = function (path) {
+        content.innerText = 'sorry, nothing found at ' + path;
+    };
+    return Example;
+}());
+__decorate([
+    index_1.route('')
+], Example.prototype, "index", null);
+__decorate([
+    index_1.route('test1')
+], Example.prototype, "test1", null);
+__decorate([
+    index_1.route('test2')
+], Example.prototype, "test2", null);
+__decorate([
+    index_1.route('custom/:value'),
+    __param(0, index_1.routeParam('value'))
+], Example.prototype, "custom", null);
+__decorate([
+    index_1.route('sub/*path'),
+    __param(0, index_1.routeParam('path'))
+], Example.prototype, "noMatchSub", null);
+__decorate([
+    index_1.route('*path'),
+    __param(0, index_1.routeParam('path'))
+], Example.prototype, "noMatch", null);
+Example = __decorate([
+    index_1.route('/')
+], Example);
+var example = new Example();
+var content = document.getElementById('content');
+var test1 = document.getElementById('test1');
+var test2 = document.getElementById('test2');
+var test3 = document.getElementById('test3');
+test1.onclick = function (e) {
+    e.preventDefault();
+    example.test1();
+    return false;
+};
+var servedAsFile = location.protocol.indexOf('file') === 0;
+index_1.router.init(servedAsFile ? new index_1.HashLocationProvider() : new index_1.PathLocationProvider('/'));
 
-var Route = __webpack_require__(4);
-
-
-module.exports = Route;
 
 /***/ }),
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
+/**
+ * @module Passage
+ */
 
-var Parser = __webpack_require__(6),
-    RegexpVisitor = __webpack_require__(7),
-    ReverseVisitor = __webpack_require__(8);
+
+var Route = __webpack_require__(5);
+
+
+module.exports = Route;
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var Parser = __webpack_require__(7),
+    RegexpVisitor = __webpack_require__(8),
+    ReverseVisitor = __webpack_require__(9);
 
 Route.prototype = Object.create(null)
 
@@ -444,7 +549,7 @@ function Route(spec) {
 module.exports = Route;
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* parser generated by jison 0.4.17 */
@@ -1081,7 +1186,7 @@ exports.parse = function () { return parser.parse.apply(parser, arguments); };
 }
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1091,13 +1196,13 @@ exports.parse = function () { return parser.parse.apply(parser, arguments); };
 
 
 /** Wrap the compiled parser with the context to create node objects */
-var parser = __webpack_require__(5).parser;
+var parser = __webpack_require__(6).parser;
 parser.yy = __webpack_require__(0);
 module.exports = parser;
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1200,7 +1305,7 @@ var RegexpVisitor = createVisitor({
 module.exports = RegexpVisitor;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1271,83 +1376,6 @@ var ReverseVisitor = createVisitor({
 });
 
 module.exports = ReverseVisitor;
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var index_1 = __webpack_require__(2);
-var Example = (function () {
-    function Example() {
-    }
-    Example.prototype.index = function () {
-        content.innerText = 'hello, index';
-    };
-    Example.prototype.test1 = function () {
-        content.innerText = 'hello, test1';
-    };
-    Example.prototype.test2 = function () {
-        content.innerText = 'hello, test2';
-    };
-    Example.prototype.custom = function (value) {
-        content.innerText = 'hello, ' + value;
-    };
-    Example.prototype.noMatchSub = function (path) {
-        content.innerText = 'sorry, nothing found at subpath sub/' + path;
-    };
-    Example.prototype.noMatch = function (path) {
-        content.innerText = 'sorry, nothing found at ' + path;
-    };
-    return Example;
-}());
-__decorate([
-    index_1.route('')
-], Example.prototype, "index", null);
-__decorate([
-    index_1.route('test1')
-], Example.prototype, "test1", null);
-__decorate([
-    index_1.route('test2')
-], Example.prototype, "test2", null);
-__decorate([
-    index_1.route('custom/:value'),
-    __param(0, index_1.routeParam('value'))
-], Example.prototype, "custom", null);
-__decorate([
-    index_1.route('sub/*path'),
-    __param(0, index_1.routeParam('path'))
-], Example.prototype, "noMatchSub", null);
-__decorate([
-    index_1.route('*path'),
-    __param(0, index_1.routeParam('path'))
-], Example.prototype, "noMatch", null);
-Example = __decorate([
-    index_1.route('/')
-], Example);
-var example = new Example();
-var content = document.getElementById('content');
-var test1 = document.getElementById('test1');
-var test2 = document.getElementById('test2');
-var test3 = document.getElementById('test3');
-test1.onclick = function (e) {
-    e.preventDefault();
-    example.test1();
-    return false;
-};
-index_1.router.init(new index_1.HashLocationProvider());
-
 
 /***/ })
 /******/ ]);

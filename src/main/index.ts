@@ -32,10 +32,24 @@ export interface Router {
     init(locationProvider:LocationProvider):void;
 }
 
-export class HashLocationProvider {
+class PathUtil {
+
+    private static MultiSlashRegex = /\/[\/]+/g;
+
+    public static combinePath(path1:string, path2:string) {
+        path1 = path1 || '';
+        path2 = path2 || '';
+
+        let path = path1 + '/' + path2;
+
+        return path.replace(PathUtil.MultiSlashRegex, '/');
+    }
+}
+
+export class HashLocationProvider implements LocationProvider {
     get location():string {
         let currentPath = window.location.hash;
-        if (currentPath && currentPath.startsWith('#')) {
+        if (currentPath && currentPath.indexOf('#') === 0) {
             currentPath = currentPath.substring(1);
         }
         return currentPath;
@@ -43,6 +57,25 @@ export class HashLocationProvider {
 
     set location(location:string) {
         window.location.hash = '#' + location;
+    }
+}
+
+export class PathLocationProvider implements LocationProvider {
+
+    constructor(private basePath:string = '/') {
+    }
+
+    get location():string {
+        let pathName = '/' + window.location.pathname;
+        if (pathName.indexOf(this.basePath) !== 0) {
+            throw 'basePath not in current window.location.pathname';
+        }
+        return pathName.substring(this.basePath.length);
+    }
+
+    set location(location:string) {
+        let newPath = PathUtil.combinePath(this.basePath, location);
+        history.pushState(null, null, newPath);
     }
 }
 
@@ -65,7 +98,7 @@ class RouterImpl implements Router {
 
         this.buildRoutes();
 
-        window.onpopstate = (e) => {
+        window.onpopstate = () => {
             this.navigateToPath(this.locationProvider.location);
         };
 
@@ -78,7 +111,7 @@ class RouterImpl implements Router {
             for (let methodEntry of methods) {
 
                 if (objectEntry.obj instanceof methodEntry.target.constructor) {
-                    let routePath = this.combinePath(objectEntry.path, methodEntry.path);
+                    let routePath = PathUtil.combinePath(objectEntry.path, methodEntry.path);
 
                     this.addRoute(objectEntry.obj, methodEntry.methodName, new Route(routePath));
                 }
@@ -134,17 +167,6 @@ class RouterImpl implements Router {
         return false;
     }
 
-
-    private combinePath(path1:string, path2:string) {
-        path1 = path1 || '';
-        path2 = path2 || '';
-
-        if (!path1.endsWith('/') && !path2.startsWith('/')) {
-            path1 += '/';
-        }
-
-        return path1 + path2;
-    }
 
     public maybeAddState(obj:any, methodName:string, args:IArguments) {
         let methodRoutes:Map<string, Route> = this.routes.get(obj);

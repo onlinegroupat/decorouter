@@ -4,7 +4,12 @@ export interface LocationProvider {
 export interface Router {
     init(locationProvider: LocationProvider): void;
 }
-export declare class HashLocationProvider {
+export declare class HashLocationProvider implements LocationProvider {
+    location: string;
+}
+export declare class PathLocationProvider implements LocationProvider {
+    private basePath;
+    constructor(basePath?: string);
     location: string;
 }
 export declare function routeMethod(path: string): Function;
