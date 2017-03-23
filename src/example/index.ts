@@ -3,6 +3,12 @@ import {route, router, routeParam, HashLocationProvider} from '../main/index';
 
 @route('/')
 class Example {
+
+    @route('')
+    public index() {
+        content.innerText = 'hello, index';
+    }
+
     @route('test1')
     public test1() {
         content.innerText = 'hello, test1';

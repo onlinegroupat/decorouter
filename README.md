@@ -1,6 +1,6 @@
 # Decorouter
 
-The Decorative Router - very lightweight client routing using TypeScript decorators and HTML5 History API.
+Decorative Router - very lightweight client routing using TypeScript decorators and HTML5 History API.
 
 ## Usage
 

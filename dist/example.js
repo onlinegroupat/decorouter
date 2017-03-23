@@ -243,18 +243,21 @@ var RouterImpl = (function () {
         obj[methodName].call(obj, args);
     };
     RouterImpl.prototype.navigateToPath = function (path) {
-        var _this = this;
-        var found = false;
-        this.routes.forEach(function (methodRoutes, obj) {
-            methodRoutes.forEach(function (route, methodName) {
-                var match = route.match(path);
+        if (!path) {
+            path = '/';
+        }
+        for (var _i = 0, _a = Array.from(this.routes.entries()); _i < _a.length; _i++) {
+            var _b = _a[_i], obj = _b[0], methodRoutes = _b[1];
+            for (var _c = 0, _d = Array.from(methodRoutes.entries()); _c < _d.length; _c++) {
+                var _e = _d[_c], methodName = _e[0], route_1 = _e[1];
+                var match = route_1.match(path);
                 if (match) {
-                    _this.handleRoute(obj, methodName, match);
-                    found = true;
+                    this.handleRoute(obj, methodName, match);
+                    return true;
                 }
-            });
-        });
-        return found;
+            }
+        }
+        return false;
     };
     RouterImpl.prototype.combinePath = function (path1, path2) {
         path1 = path1 || '';
@@ -267,7 +270,7 @@ var RouterImpl = (function () {
     RouterImpl.prototype.maybeAddState = function (obj, methodName, args) {
         var methodRoutes = this.routes.get(obj);
         if (methodRoutes) {
-            var route_1 = methodRoutes.get(methodName);
+            var route_2 = methodRoutes.get(methodName);
             var routeParams = {};
             for (var _i = 0, params_2 = params; _i < params_2.length; _i++) {
                 var paramEntry = params_2[_i];
@@ -279,7 +282,7 @@ var RouterImpl = (function () {
                     }
                 }
             }
-            var newState = route_1.reverse(routeParams);
+            var newState = route_2.reverse(routeParams);
             if (newState) {
                 this.locationProvider.location = newState;
             }
@@ -1289,6 +1292,9 @@ var index_1 = __webpack_require__(2);
 var Example = (function () {
     function Example() {
     }
+    Example.prototype.index = function () {
+        content.innerText = 'hello, index';
+    };
     Example.prototype.test1 = function () {
         content.innerText = 'hello, test1';
     };
@@ -1306,6 +1312,9 @@ var Example = (function () {
     };
     return Example;
 }());
+__decorate([
+    index_1.route('')
+], Example.prototype, "index", null);
 __decorate([
     index_1.route('test1')
 ], Example.prototype, "test1", null);

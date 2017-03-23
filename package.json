@@ -1,10 +1,11 @@
 {
   "name": "decorouter",
   "version": "1.0.0",
-  "description": "The Decorative Router - very lightweight client routing using TypeScript decorators and HTML5 History API",
+  "description": "Decorative Router - very lightweight client routing using TypeScript decorators and HTML5 History API",
   "main": "lib/main/index.js",
   "types": "lib/main/index.d.ts",
   "scripts": {
+    "dev": "tsc && webpack -w",
     "build": "tsc && webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
