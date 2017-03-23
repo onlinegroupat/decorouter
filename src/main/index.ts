@@ -74,8 +74,10 @@ export class PathLocationProvider implements LocationProvider {
     }
 
     set location(location:string) {
-        let newPath = PathUtil.combinePath(this.basePath, location);
-        history.pushState(null, null, newPath);
+        if (location != this.location) {
+            let newPath = PathUtil.combinePath(this.basePath, location);
+            history.pushState(null, null, newPath);
+        }
     }
 }
 
@@ -146,7 +148,7 @@ class RouterImpl implements Router {
         }
 
         // call method
-        obj[methodName].call(obj, args);
+        obj[methodName].call(obj, ...args);
     }
 
     private navigateToPath(path:string):boolean {
@@ -203,10 +205,10 @@ export function routeMethod(path:string):Function {
         // inject wrapper
         descriptor.value = function() {
             // add state
-            routerImpl.maybeAddState(this, methodName, arguments[0]);
+            routerImpl.maybeAddState(this, methodName, arguments);
 
             // call original
-            original.apply(this, arguments[0]);
+            original.apply(this, arguments);
         };
 
         return descriptor;

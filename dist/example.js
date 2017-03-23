@@ -213,8 +213,10 @@ var PathLocationProvider = (function () {
             return pathName.substring(this.basePath.length);
         },
         set: function (location) {
-            var newPath = PathUtil.combinePath(this.basePath, location);
-            history.pushState(null, null, newPath);
+            if (location != this.location) {
+                var newPath = PathUtil.combinePath(this.basePath, location);
+                history.pushState(null, null, newPath);
+            }
         },
         enumerable: true,
         configurable: true
@@ -275,7 +277,8 @@ var RouterImpl = (function () {
             }
         }
         // call method
-        obj[methodName].call(obj, args);
+        (_a = obj[methodName]).call.apply(_a, [obj].concat(args));
+        var _a;
     };
     RouterImpl.prototype.navigateToPath = function (path) {
         if (!path) {
@@ -324,9 +327,9 @@ function routeMethod(path) {
         // inject wrapper
         descriptor.value = function () {
             // add state
-            routerImpl.maybeAddState(this, methodName, arguments[0]);
+            routerImpl.maybeAddState(this, methodName, arguments);
             // call original
-            original.apply(this, arguments[0]);
+            original.apply(this, arguments);
         };
         return descriptor;
     };
@@ -408,7 +411,7 @@ var Example = (function () {
     Example.prototype.test2 = function () {
         content.innerText = 'hello, test2';
     };
-    Example.prototype.custom = function (value) {
+    Example.prototype.param = function (value) {
         content.innerText = 'hello, ' + value;
     };
     Example.prototype.multi = function (param, value) {
@@ -432,9 +435,9 @@ __decorate([
     index_1.route('test2')
 ], Example.prototype, "test2", null);
 __decorate([
-    index_1.route('custom/:value'),
+    index_1.route('param/:value'),
     __param(0, index_1.routeParam('value'))
-], Example.prototype, "custom", null);
+], Example.prototype, "param", null);
 __decorate([
     index_1.route('multi/:param(/value/:value)'),
     __param(0, index_1.routeParam('param')), __param(1, index_1.routeParam('value'))
@@ -454,10 +457,26 @@ var example = new Example();
 var content = document.getElementById('content');
 var test1 = document.getElementById('test1');
 var test2 = document.getElementById('test2');
-var test3 = document.getElementById('test3');
+var param = document.getElementById('param');
+var multi = document.getElementById('multi');
 test1.onclick = function (e) {
     e.preventDefault();
     example.test1();
+    return false;
+};
+test2.onclick = function (e) {
+    e.preventDefault();
+    example.test2();
+    return false;
+};
+param.onclick = function (e) {
+    e.preventDefault();
+    example.param('programmatic value');
+    return false;
+};
+multi.onclick = function (e) {
+    e.preventDefault();
+    example.multi('foo2', 'bar2');
     return false;
 };
 var servedAsFile = location.protocol.indexOf('file') === 0;

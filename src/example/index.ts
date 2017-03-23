@@ -19,8 +19,8 @@ class Example {
         content.innerText = 'hello, test2';
     }
 
-    @route('custom/:value')
-    public custom(@routeParam('value') value:string) {
+    @route('param/:value')
+    public param(@routeParam('value') value:string) {
         content.innerText = 'hello, ' + value;
     }
 
@@ -43,13 +43,33 @@ class Example {
 let example = new Example();
 
 let content = document.getElementById('content');
+
 let test1 = document.getElementById('test1');
 let test2 = document.getElementById('test2');
-let test3 = document.getElementById('test3');
+let param = document.getElementById('param');
+let multi = document.getElementById('multi');
 
 test1.onclick = (e) => {
     e.preventDefault();
     example.test1();
+    return false;
+};
+
+test2.onclick = (e) => {
+    e.preventDefault();
+    example.test2();
+    return false;
+};
+
+param.onclick = (e) => {
+    e.preventDefault();
+    example.param('programmatic value');
+    return false;
+};
+
+multi.onclick = (e) => {
+    e.preventDefault();
+    example.multi('foo2', 'bar2');
     return false;
 };
 
