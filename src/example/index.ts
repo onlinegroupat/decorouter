@@ -24,6 +24,11 @@ class Example {
         content.innerText = 'hello, ' + value;
     }
 
+    @route('multi/:param(/value/:value)')
+    public multi(@routeParam('param') param:string, @routeParam('value') value:string) {
+        content.innerText = `multi: param = ${param} and value = ${value}`;
+    }
+
     @route('sub/*path')
     public noMatchSub(@routeParam('path') path:string) {
         content.innerText = 'sorry, nothing found at subpath sub/' + path;

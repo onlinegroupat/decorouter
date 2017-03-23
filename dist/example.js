@@ -324,9 +324,9 @@ function routeMethod(path) {
         // inject wrapper
         descriptor.value = function () {
             // add state
-            routerImpl.maybeAddState(this, methodName, arguments);
+            routerImpl.maybeAddState(this, methodName, arguments[0]);
             // call original
-            original.apply(this, arguments);
+            original.apply(this, arguments[0]);
         };
         return descriptor;
     };
@@ -411,6 +411,9 @@ var Example = (function () {
     Example.prototype.custom = function (value) {
         content.innerText = 'hello, ' + value;
     };
+    Example.prototype.multi = function (param, value) {
+        content.innerText = "multi: param = " + param + " and value = " + value;
+    };
     Example.prototype.noMatchSub = function (path) {
         content.innerText = 'sorry, nothing found at subpath sub/' + path;
     };
@@ -432,6 +435,10 @@ __decorate([
     index_1.route('custom/:value'),
     __param(0, index_1.routeParam('value'))
 ], Example.prototype, "custom", null);
+__decorate([
+    index_1.route('multi/:param(/value/:value)'),
+    __param(0, index_1.routeParam('param')), __param(1, index_1.routeParam('value'))
+], Example.prototype, "multi", null);
 __decorate([
     index_1.route('sub/*path'),
     __param(0, index_1.routeParam('path'))

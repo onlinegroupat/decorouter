@@ -203,10 +203,10 @@ export function routeMethod(path:string):Function {
         // inject wrapper
         descriptor.value = function() {
             // add state
-            routerImpl.maybeAddState(this, methodName, arguments);
+            routerImpl.maybeAddState(this, methodName, arguments[0]);
 
             // call original
-            original.apply(this, arguments);
+            original.apply(this, arguments[0]);
         };
 
         return descriptor;
