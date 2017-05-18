@@ -62,20 +62,25 @@ export class HashLocationProvider implements LocationProvider {
 
 export class PathLocationProvider implements LocationProvider {
 
-    constructor(private basePath:string = '/') {
+    constructor(private basePath:string = null) {
     }
 
     get location():string {
         let pathName = window.location.pathname;
-        if (pathName.indexOf(this.basePath) !== 0) {
-            throw 'basePath not in current window.location.pathname';
+        if (this.basePath) {
+            if (pathName.indexOf(this.basePath) !== 0) {
+                throw 'basePath not in current window.location.pathname';
+            }
+            return pathName.substring(this.basePath.length);
         }
-        return pathName.substring(this.basePath.length);
+        else {
+            return pathName;
+        }
     }
 
     set location(location:string) {
         if (location != this.location) {
-            let newPath = PathUtil.combinePath(this.basePath, location);
+            let newPath = this.basePath ? PathUtil.combinePath(this.basePath, location) : location;
             history.pushState(null, null, newPath);
         }
     }

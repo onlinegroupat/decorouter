@@ -74,4 +74,4 @@ multi.onclick = (e) => {
 };
 
 let servedAsFile = location.protocol.indexOf('file') === 0;
-router.init(servedAsFile ? new HashLocationProvider() : new PathLocationProvider('/'));
+router.init(servedAsFile ? new HashLocationProvider() : new PathLocationProvider());
