@@ -66,7 +66,7 @@ export class PathLocationProvider implements LocationProvider {
     }
 
     get location():string {
-        let pathName = '/' + window.location.pathname;
+        let pathName = window.location.pathname;
         if (pathName.indexOf(this.basePath) !== 0) {
             throw 'basePath not in current window.location.pathname';
         }
