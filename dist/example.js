@@ -220,7 +220,7 @@ var PathLocationProvider = (function () {
         set: function (location) {
             if (location != this.location) {
                 var newPath = this.basePath ? PathUtil.combinePath(this.basePath, location) : location;
-                history.pushState(null, null, newPath);
+                history.pushState(null, '', newPath);
             }
         },
         enumerable: true,
@@ -251,18 +251,15 @@ var RouterImpl = (function () {
             for (var _a = 0, methods_1 = methods; _a < methods_1.length; _a++) {
                 var methodEntry = methods_1[_a];
                 if (objectEntry.obj instanceof methodEntry.target.constructor) {
-                    var routePath = PathUtil.combinePath(objectEntry.path, methodEntry.path);
+                    var routePath = objectEntry.path ? PathUtil.combinePath(objectEntry.path, methodEntry.path) : methodEntry.path;
                     this.addRoute(objectEntry.obj, methodEntry.methodName, new Route(routePath));
                 }
             }
         }
     };
     RouterImpl.prototype.addRoute = function (obj, methodName, route) {
-        var methodRoute = null;
-        if (this.routes.has(obj)) {
-            methodRoute = this.routes.get(obj);
-        }
-        else {
+        var methodRoute = this.routes.get(obj);
+        if (!methodRoute) {
             methodRoute = new Map();
             this.routes.set(obj, methodRoute);
         }
@@ -306,20 +303,22 @@ var RouterImpl = (function () {
         var methodRoutes = this.routes.get(obj);
         if (methodRoutes) {
             var route_2 = methodRoutes.get(methodName);
-            var routeParams = {};
-            for (var _i = 0, params_2 = params; _i < params_2.length; _i++) {
-                var paramEntry = params_2[_i];
-                // check class
-                if (obj instanceof paramEntry.target.constructor) {
-                    // check method
-                    if (methodName == paramEntry.methodName) {
-                        routeParams[paramEntry.paramName] = args[paramEntry.index];
+            if (route_2) {
+                var routeParams = {};
+                for (var _i = 0, params_2 = params; _i < params_2.length; _i++) {
+                    var paramEntry = params_2[_i];
+                    // check class
+                    if (obj instanceof paramEntry.target.constructor) {
+                        // check method
+                        if (methodName == paramEntry.methodName) {
+                            routeParams[paramEntry.paramName] = args[paramEntry.index];
+                        }
                     }
                 }
-            }
-            var newState = route_2.reverse(routeParams);
-            if (newState) {
-                this.locationProvider.location = newState;
+                var newState = route_2.reverse(routeParams);
+                if (newState) {
+                    this.locationProvider.location = newState;
+                }
             }
         }
     };
@@ -459,31 +458,39 @@ Example = __decorate([
     index_1.route('/')
 ], Example);
 var example = new Example();
-var content = document.getElementById('content');
+var content = document.getElementById('content') || document.createElement('div');
 var test1 = document.getElementById('test1');
 var test2 = document.getElementById('test2');
 var param = document.getElementById('param');
 var multi = document.getElementById('multi');
-test1.onclick = function (e) {
-    e.preventDefault();
-    example.test1();
-    return false;
-};
-test2.onclick = function (e) {
-    e.preventDefault();
-    example.test2();
-    return false;
-};
-param.onclick = function (e) {
-    e.preventDefault();
-    example.param('programmatic value');
-    return false;
-};
-multi.onclick = function (e) {
-    e.preventDefault();
-    example.multi('foo2', 'bar2');
-    return false;
-};
+if (test1) {
+    test1.onclick = function (e) {
+        e.preventDefault();
+        example.test1();
+        return false;
+    };
+}
+if (test2) {
+    test2.onclick = function (e) {
+        e.preventDefault();
+        example.test2();
+        return false;
+    };
+}
+if (param) {
+    param.onclick = function (e) {
+        e.preventDefault();
+        example.param('programmatic value');
+        return false;
+    };
+}
+if (multi) {
+    multi.onclick = function (e) {
+        e.preventDefault();
+        example.multi('foo2', 'bar2');
+        return false;
+    };
+}
 var servedAsFile = location.protocol.indexOf('file') === 0;
 index_1.router.init(servedAsFile ? new index_1.HashLocationProvider() : new index_1.PathLocationProvider());
 

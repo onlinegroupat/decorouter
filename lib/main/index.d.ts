@@ -9,7 +9,7 @@ export declare class HashLocationProvider implements LocationProvider {
 }
 export declare class PathLocationProvider implements LocationProvider {
     private basePath;
-    constructor(basePath?: string);
+    constructor(basePath?: string | null);
     location: string;
 }
 export declare function routeMethod(path: string): Function;

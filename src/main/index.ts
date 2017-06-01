@@ -15,7 +15,7 @@ interface ParamEntry {
 
 interface ObjectEntry {
     obj:Object;
-    path:string;
+    path?:string;
 }
 
 const methods:MethodEntry[] = [];
@@ -62,7 +62,7 @@ export class HashLocationProvider implements LocationProvider {
 
 export class PathLocationProvider implements LocationProvider {
 
-    constructor(private basePath:string = null) {
+    constructor(private basePath:string|null = null) {
     }
 
     get location():string {
@@ -81,7 +81,7 @@ export class PathLocationProvider implements LocationProvider {
     set location(location:string) {
         if (location != this.location) {
             let newPath = this.basePath ? PathUtil.combinePath(this.basePath, location) : location;
-            history.pushState(null, null, newPath);
+            history.pushState(null, '', newPath);
         }
     }
 }
@@ -118,7 +118,7 @@ class RouterImpl implements Router {
             for (let methodEntry of methods) {
 
                 if (objectEntry.obj instanceof methodEntry.target.constructor) {
-                    let routePath = PathUtil.combinePath(objectEntry.path, methodEntry.path);
+                    let routePath = objectEntry.path ? PathUtil.combinePath(objectEntry.path, methodEntry.path) : methodEntry.path;
 
                     this.addRoute(objectEntry.obj, methodEntry.methodName, new Route(routePath));
                 }
@@ -127,15 +127,11 @@ class RouterImpl implements Router {
     }
 
     private addRoute(obj:Object, methodName:string, route:Route) {
-        let methodRoute:Map<string, Route> = null;
-        if (this.routes.has(obj)) {
-            methodRoute = this.routes.get(obj);
-        }
-        else {
+        let methodRoute = this.routes.get(obj);
+        if (!methodRoute) {
             methodRoute = new Map<string, Route>();
             this.routes.set(obj, methodRoute);
         }
-
         methodRoute.set(methodName, route);
     }
 
@@ -176,25 +172,26 @@ class RouterImpl implements Router {
 
 
     public maybeAddState(obj:any, methodName:string, args:IArguments) {
-        let methodRoutes:Map<string, Route> = this.routes.get(obj);
+        let methodRoutes = this.routes.get(obj);
         if (methodRoutes) {
             let route = methodRoutes.get(methodName);
+            if (route) {
+                let routeParams:RouteParams = {};
 
-            let routeParams:RouteParams = {};
-
-            for (let paramEntry of params) {
-                // check class
-                if (obj instanceof paramEntry.target.constructor) {
-                    // check method
-                    if (methodName == paramEntry.methodName) {
-                        routeParams[paramEntry.paramName] = args[paramEntry.index];
+                for (let paramEntry of params) {
+                    // check class
+                    if (obj instanceof paramEntry.target.constructor) {
+                        // check method
+                        if (methodName == paramEntry.methodName) {
+                            routeParams[paramEntry.paramName] = args[paramEntry.index];
+                        }
                     }
                 }
-            }
 
-            let newState = route.reverse(routeParams);
-            if (newState) {
-                this.locationProvider.location = newState as string;
+                let newState = route.reverse(routeParams);
+                if (newState) {
+                    this.locationProvider.location = newState as string;
+                }
             }
         }
     }

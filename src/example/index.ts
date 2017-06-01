@@ -42,36 +42,44 @@ class Example {
 
 let example = new Example();
 
-let content = document.getElementById('content');
+let content = document.getElementById('content') || document.createElement('div');
 
 let test1 = document.getElementById('test1');
 let test2 = document.getElementById('test2');
 let param = document.getElementById('param');
 let multi = document.getElementById('multi');
 
-test1.onclick = (e) => {
-    e.preventDefault();
-    example.test1();
-    return false;
-};
+if (test1) {
+    test1.onclick = (e) => {
+        e.preventDefault();
+        example.test1();
+        return false;
+    };
+}
 
-test2.onclick = (e) => {
-    e.preventDefault();
-    example.test2();
-    return false;
-};
+if (test2) {
+    test2.onclick = (e) => {
+        e.preventDefault();
+        example.test2();
+        return false;
+    };
+}
 
-param.onclick = (e) => {
-    e.preventDefault();
-    example.param('programmatic value');
-    return false;
-};
+if (param) {
+    param.onclick = (e) => {
+        e.preventDefault();
+        example.param('programmatic value');
+        return false;
+    };
+}
 
-multi.onclick = (e) => {
-    e.preventDefault();
-    example.multi('foo2', 'bar2');
-    return false;
-};
+if (multi) {
+    multi.onclick = (e) => {
+        e.preventDefault();
+        example.multi('foo2', 'bar2');
+        return false;
+    };
+}
 
 let servedAsFile = location.protocol.indexOf('file') === 0;
 router.init(servedAsFile ? new HashLocationProvider() : new PathLocationProvider());
